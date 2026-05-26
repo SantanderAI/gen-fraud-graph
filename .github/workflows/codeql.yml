@@ -27,11 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@662472033e021d55d94146f66f6058822b0b39fd  # v3.27.0
+        uses: github/codeql-action/init@7211b7c8077ea37d8641b6271f6a365a22a5fbfa  # v4.36.0
         with:
           languages: python
           queries: security-and-quality
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@662472033e021d55d94146f66f6058822b0b39fd  # v3.27.0
+        uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa  # v4.36.0
         with:
           category: "/language:python"
