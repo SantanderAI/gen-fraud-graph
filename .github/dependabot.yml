@@ -10,11 +10,11 @@ updates:
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
       day: monday
       time: "06:00"
       timezone: Europe/Madrid
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - dependencies
       - python
@@ -28,19 +28,24 @@ updates:
           - patch
 
   # GitHub Actions used by workflows in .github/workflows/
-  # Dependabot will keep the SHA pins fresh and bump the human-readable
-  # version comment on each upgrade PR.
+  # Dependabot keeps SHA pins fresh and bumps the human-readable version comment.
+  # Grouped so a single PR covers all minor/patch action bumps.
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
       day: monday
       time: "06:00"
       timezone: Europe/Madrid
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - dependencies
       - github-actions
     commit-message:
       prefix: "ci(deps)"
       include: scope
+    groups:
+      gha-minor-patch:
+        update-types:
+          - minor
+          - patch

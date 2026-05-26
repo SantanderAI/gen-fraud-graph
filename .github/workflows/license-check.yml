@@ -34,7 +34,7 @@ jobs:
       - name: Verify all dependency licenses are in allowlist
         run: |
           ALLOWED='Apache Software License;MIT License;BSD License;Mozilla Public License 2.0 (MPL 2.0);Python Software Foundation License;The Unlicense (Unlicense);ISC License (ISCL);Apache 2.0;MIT;BSD-3-Clause;BSD-2-Clause;Apache-2.0;PSF-2.0'
-          pip-licenses --format=json --with-license-file=false > /tmp/licenses.json
+          pip-licenses --format=json > /tmp/licenses.json
           python - <<'PY'
           import json, sys
           allowed = set(s.strip() for s in (
