@@ -1,0 +1,46 @@
+# Copyright (c) 2026 Santander Group
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dependabot configuration.
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Python runtime + dev dependencies declared in pyproject.toml
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Madrid
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - python
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    groups:
+      python-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions used by workflows in .github/workflows/
+  # Dependabot will keep the SHA pins fresh and bump the human-readable
+  # version comment on each upgrade PR.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Madrid
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "ci(deps)"
+      include: scope

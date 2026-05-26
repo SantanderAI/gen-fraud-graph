@@ -1,0 +1,47 @@
+# Copyright (c) 2026 Santander Group
+# SPDX-License-Identifier: Apache-2.0
+#
+# Mark and close stale issues / PRs.
+# Replace action references with SHA digests before publishing.
+
+name: Stale
+
+on:
+  schedule:
+    - cron: "0 1 * * *"  # daily 01:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark stale
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@28ca1036281a5e5922ead5184a1bbf96e5fc984e  # v9.0.0
+        with:
+          days-before-issue-stale: 90
+          days-before-issue-close: 30
+          days-before-pr-stale: 60
+          days-before-pr-close: 14
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-issue-labels: "pinned,security,help-wanted"
+          exempt-pr-labels: "pinned,security"
+          stale-issue-message: >-
+            This issue has been automatically marked as stale because it has
+            had no activity for 90 days. It will be closed in 30 days if no
+            further activity occurs. Thank you for your contributions.
+          close-issue-message: >-
+            This issue has been automatically closed due to inactivity. If you
+            believe this is still relevant, please reopen it with additional
+            context.
+          stale-pr-message: >-
+            This pull request has been automatically marked as stale because
+            it has had no activity for 60 days. It will be closed in 14 days
+            if no further activity occurs.
+          close-pr-message: >-
+            This pull request has been automatically closed due to inactivity.
+            Feel free to reopen when you can resume working on it.

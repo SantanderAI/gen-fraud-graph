@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/SantanderAI/gen-fraud-graph/security/advisories/new
+    about: Report a security vulnerability privately (do NOT open a public issue).
+  - name: Questions and discussions
+    url: https://github.com/SantanderAI/gen-fraud-graph/discussions
+    about: Use Discussions for design questions, usage help, and ideas.

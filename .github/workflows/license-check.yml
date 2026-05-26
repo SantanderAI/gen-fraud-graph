@@ -1,0 +1,74 @@
+# Copyright (c) 2026 Santander Group
+# SPDX-License-Identifier: Apache-2.0
+#
+# License compliance: dependency-license allowlist + SPDX header verification.
+# Replace action references with SHA digests before publishing.
+
+name: License check
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dep-licenses:
+    name: Dependency license allowlist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project + pip-licenses
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "."
+          pip install pip-licenses==5.0.0
+      - name: Verify all dependency licenses are in allowlist
+        run: |
+          ALLOWED='Apache Software License;MIT License;BSD License;Mozilla Public License 2.0 (MPL 2.0);Python Software Foundation License;The Unlicense (Unlicense);ISC License (ISCL);Apache 2.0;MIT;BSD-3-Clause;BSD-2-Clause;Apache-2.0;PSF-2.0'
+          pip-licenses --format=json --with-license-file=false > /tmp/licenses.json
+          python - <<'PY'
+          import json, sys
+          allowed = set(s.strip() for s in (
+              "Apache Software License;MIT License;BSD License;"
+              "Mozilla Public License 2.0 (MPL 2.0);Python Software Foundation License;"
+              "The Unlicense (Unlicense);ISC License (ISCL);Apache 2.0;MIT;"
+              "BSD-3-Clause;BSD-2-Clause;Apache-2.0;PSF-2.0"
+          ).split(";"))
+          data = json.load(open("/tmp/licenses.json"))
+          bad = [p for p in data if p["License"] not in allowed]
+          if bad:
+              for p in bad:
+                  print(f"DISALLOWED: {p['Name']} {p['Version']} -> {p['License']}")
+              sys.exit(1)
+          print(f"OK: {len(data)} dependencies, all licenses allowed.")
+          PY
+
+  spdx-headers:
+    name: SPDX headers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Verify every Python file declares SPDX-License-Identifier
+        run: |
+          missing=0
+          while IFS= read -r f; do
+            if ! head -n 5 "$f" | grep -q "SPDX-License-Identifier:"; then
+              echo "MISSING SPDX header: $f"
+              missing=$((missing + 1))
+            fi
+          done < <(find src tests examples -type f -name "*.py")
+          if [ "$missing" -gt 0 ]; then
+            echo "Found $missing files without SPDX header."
+            exit 1
+          fi
+          echo "OK: all Python files have SPDX headers."

@@ -1,0 +1,12 @@
+# Allowlist for `.github/workflows/pattern-check.yml`.
+# One literal substring per line. A scanned line that contains ANY of these
+# substrings is allowed even if it matches a pattern.
+#
+# Use this ONLY for legitimate public-facing contacts and identifiers.
+# Do NOT add internal URLs, IPs or hostnames here — fix the source instead.
+
+# Public security & code-of-conduct mailboxes (intentionally on the public
+# corporate domain — these are the documented contact points published in
+# SECURITY.md and CODE_OF_CONDUCT.md):
+opensource@gruposantander.com
+security-opensource@gruposantander.com
