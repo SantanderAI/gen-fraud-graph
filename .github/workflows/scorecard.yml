@@ -1,0 +1,61 @@
+# Copyright (c) 2026 Santander Group
+# SPDX-License-Identifier: Apache-2.0
+#
+# OpenSSF Scorecard supply-chain security analysis.
+# Runs weekly + on push to main + when branch protection rules change.
+# Results published to scorecard.dev (public dashboard) and uploaded to the
+# repository's Code Scanning view.
+#
+# Like CodeQL, this workflow uploads SARIF results which on private repos
+# requires GitHub Advanced Security. The analyze job is therefore skipped
+# while the repo is private; it activates automatically once flipped to
+# public.
+
+name: Scorecard supply-chain security
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: "20 7 * * 2"  # weekly Tuesday 07:20 UTC
+  push:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write   # required by upload-sarif
+      id-token: write          # required to publish results to scorecard.dev
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@62b2cac7ed8198b15735ed49ab1e5cf35480ba46  # v2.4.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # Publish results to https://api.securityscorecards.dev so the
+          # public dashboard / badge can serve them.
+          publish_results: true
+
+      - name: Upload SARIF as artifact
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
+        with:
+          name: scorecard-sarif
+          path: results.sarif
+          retention-days: 14
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@662472033e021d55d94146f66f6058822b0b39fd  # v3.27.0
+        with:
+          sarif_file: results.sarif

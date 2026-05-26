@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SantanderAI · gen_fraud_graph
+  Social preview image (1280x640) for GitHub repository sharing.
+  Brand reference: Santander Red #EC0000 (group), white, dark red #8B0000.
+  No proprietary logo marks are reproduced; only typography.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1280 640"
+     width="1280" height="640"
+     role="img"
+     aria-label="gen_fraud_graph — synthetic fraud-graph generator by SantanderAI">
+
+  <defs>
+    <!-- Background: Santander red gradient with subtle depth -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#EC0000"/>
+      <stop offset="60%" stop-color="#C40000"/>
+      <stop offset="100%" stop-color="#8B0000"/>
+    </linearGradient>
+
+    <!-- Subtle white highlight in top-right -->
+    <radialGradient id="glow" cx="0.85" cy="0.15" r="0.5">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Glow filter for the flagged fraud node -->
+    <filter id="fraudGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Arrow marker for directed edges -->
+    <marker id="arrow"
+            viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6"
+            orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#FFFFFF" fill-opacity="0.55"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+
+  <!-- ============================================================ -->
+  <!-- LEFT PANEL: typography                                       -->
+  <!-- ============================================================ -->
+
+  <!-- Eyebrow -->
+  <text x="80" y="120"
+        font-family="'Inter','Helvetica Neue','Arial',sans-serif"
+        font-size="20"
+        font-weight="600"
+        letter-spacing="4"
+        fill="#FFFFFF"
+        fill-opacity="0.85">
+    SANTANDER AI  ·  OPEN SOURCE
+  </text>
+
+  <!-- Title (monospace because it's a code project) -->
+  <text x="80" y="225"
+        font-family="'JetBrains Mono','SF Mono','Menlo','Consolas',monospace"
+        font-size="76"
+        font-weight="700"
+        fill="#FFFFFF">
+    gen_fraud_graph
+  </text>
+
+  <!-- Tagline -->
+  <text x="80" y="295"
+        font-family="'Inter','Helvetica Neue','Arial',sans-serif"
+        font-size="28"
+        font-weight="400"
+        fill="#FFFFFF"
+        fill-opacity="0.92">
+    Synthetic fraud-graph generator for benchmarking
+  </text>
+  <text x="80" y="335"
+        font-family="'Inter','Helvetica Neue','Arial',sans-serif"
+        font-size="28"
+        font-weight="400"
+        fill="#FFFFFF"
+        fill-opacity="0.92">
+    graph-based fraud detection at scale.
+  </text>
+
+  <!-- Capability chips -->
+  <g font-family="'Inter','Helvetica Neue','Arial',sans-serif"
+     font-size="18"
+     font-weight="600"
+     fill="#FFFFFF">
+
+    <g transform="translate(80, 410)">
+      <rect width="140" height="40" rx="20" ry="20"
+            fill="#FFFFFF" fill-opacity="0.14"
+            stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="1.2"/>
+      <text x="70" y="26" text-anchor="middle">Apache 2.0</text>
+    </g>
+
+    <g transform="translate(232, 410)">
+      <rect width="140" height="40" rx="20" ry="20"
+            fill="#FFFFFF" fill-opacity="0.14"
+            stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="1.2"/>
+      <text x="70" y="26" text-anchor="middle">Python 3.10+</text>
+    </g>
+
+    <g transform="translate(384, 410)">
+      <rect width="80" height="40" rx="20" ry="20"
+            fill="#FFFFFF" fill-opacity="0.14"
+            stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="1.2"/>
+      <text x="40" y="26" text-anchor="middle">AML</text>
+    </g>
+
+    <g transform="translate(476, 410)">
+      <rect width="170" height="40" rx="20" ry="20"
+            fill="#FFFFFF" fill-opacity="0.14"
+            stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="1.2"/>
+      <text x="85" y="26" text-anchor="middle">Synthetic Data</text>
+    </g>
+
+    <g transform="translate(658, 410)">
+      <rect width="120" height="40" rx="20" ry="20"
+            fill="#FFFFFF" fill-opacity="0.14"
+            stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="1.2"/>
+      <text x="60" y="26" text-anchor="middle">Graph ML</text>
+    </g>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- RIGHT PANEL: fraud-ring graph visualization                  -->
+  <!-- ============================================================ -->
+
+  <g transform="translate(1000, 320)">
+
+    <!-- Outer subtle dashed ring to anchor the composition -->
+    <circle cx="0" cy="0" r="190"
+            fill="none"
+            stroke="#FFFFFF" stroke-opacity="0.08"
+            stroke-width="1"
+            stroke-dasharray="3 6"/>
+
+    <!--
+      Fraud network: 11 accounts arranged as 8 outer-ring nodes
+      + 3 inner controller nodes. The seed (top of the ring) orchestrates
+      the controllers, which redistribute funds throughout the ring,
+      closing the laundering loop.
+
+      Coordinates pre-computed on circles r=150 (outer) and r~55 (inner).
+
+      Edge layers (back to front):
+        1. Background ring        — thin, low opacity, no arrows
+        2. Inner-outer fan-out    — thin, low opacity, arrows
+        3. Bold money-flow paths  — thick, high opacity, arrows
+    -->
+
+    <!--
+      Node coordinates (organic, asymmetric - mimics a force-directed
+      layout of a real fraud subgraph rather than a perfect mandala):
+
+        SEED       (   0, -150)   - flagged ring origin
+        N1         ( 128,  -92)
+        N2         ( 162,   22)
+        N3         (  88,  128)
+        N4         ( -28,  168)
+        N5         (-132,   88)
+        N6         (-165,   -4)
+        N7         ( -88, -118)
+        C1         (  68,  -42)   - top-right controller
+        C2         ( -34,    8)   - left-of-center controller
+        C3         (  20,   72)   - bottom controller
+        MULE       ( 222,  -68)   - satellite cash-out node
+    -->
+
+    <!-- Layer 1: Background ring (8 edges, structural skeleton) -->
+    <g stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="1.3"
+       fill="none">
+      <line x1="0"    y1="-150" x2="128"  y2="-92"/>
+      <line x1="128"  y1="-92"  x2="162"  y2="22"/>
+      <line x1="162"  y1="22"   x2="88"   y2="128"/>
+      <line x1="88"   y1="128"  x2="-28"  y2="168"/>
+      <line x1="-28"  y1="168"  x2="-132" y2="88"/>
+      <line x1="-132" y1="88"   x2="-165" y2="-4"/>
+      <line x1="-165" y1="-4"   x2="-88"  y2="-118"/>
+      <line x1="-88"  y1="-118" x2="0"    y2="-150"/>
+    </g>
+
+    <!-- Layer 2: Inner-outer fan-out (7 edges, secondary flow) -->
+    <g stroke="#FFFFFF" stroke-opacity="0.42" stroke-width="1.2"
+       fill="none" marker-end="url(#arrow)">
+      <line x1="68"   y1="-42" x2="88"   y2="128"/>   <!-- C1 -> N3 -->
+      <line x1="-34"  y1="8"   x2="-132" y2="88"/>    <!-- C2 -> N5 -->
+      <line x1="-34"  y1="8"   x2="-88"  y2="-118"/>  <!-- C2 -> N7 -->
+      <line x1="20"   y1="72"  x2="128"  y2="-92"/>   <!-- C3 -> N1 -->
+      <!-- inner-inner triangulation (asymmetric, only two of three sides) -->
+      <line x1="68"   y1="-42" x2="20"   y2="72"/>    <!-- C1 -> C3 -->
+      <line x1="-34"  y1="8"   x2="20"   y2="72"/>    <!-- C2 -> C3 -->
+      <!-- one cross-cluster long edge to add visual depth -->
+      <line x1="-165" y1="-4"  x2="20"   y2="72"/>    <!-- N6 -> C3 -->
+    </g>
+
+    <!-- Layer 3: BOLD money-flow (7 edges, primary fraud narrative) -->
+    <g stroke="#FFFFFF" stroke-opacity="0.92" stroke-width="3"
+       fill="none" marker-end="url(#arrow)" stroke-linecap="round">
+      <!-- seed orchestrates both upper controllers -->
+      <line x1="0"   y1="-150" x2="68"  y2="-42"/>    <!-- SEED -> C1 -->
+      <line x1="0"   y1="-150" x2="-34" y2="8"/>      <!-- SEED -> C2 -->
+      <!-- C1 pushes value to high-flow outer node N2 -->
+      <line x1="68"  y1="-42"  x2="162" y2="22"/>     <!-- C1 -> N2 -->
+      <!-- N2 cashes out to the satellite MULE (money leaves the ring) -->
+      <line x1="162" y1="22"   x2="222" y2="-68"/>    <!-- N2 -> MULE -->
+      <!-- C2 funnels to far-side outer node N6 -->
+      <line x1="-34" y1="8"    x2="-165" y2="-4"/>    <!-- C2 -> N6 -->
+      <!-- value funnels back: N4 -> C3 -> SEED closes the laundering loop -->
+      <line x1="-28" y1="168"  x2="20"  y2="72"/>     <!-- N4 -> C3 -->
+      <line x1="20"  y1="72"   x2="0"   y2="-150"/>   <!-- C3 -> SEED -->
+    </g>
+
+    <!-- Outer normal nodes (7, excluding seed and mule) -->
+    <g fill="#FFFFFF" fill-opacity="0.20"
+       stroke="#FFFFFF" stroke-opacity="0.90" stroke-width="2">
+      <circle cx="128"  cy="-92"  r="13"/>   <!-- N1 -->
+      <circle cx="162"  cy="22"   r="13"/>   <!-- N2 -->
+      <circle cx="88"   cy="128"  r="13"/>   <!-- N3 -->
+      <circle cx="-28"  cy="168"  r="13"/>   <!-- N4 -->
+      <circle cx="-132" cy="88"   r="13"/>   <!-- N5 -->
+      <circle cx="-165" cy="-4"   r="13"/>   <!-- N6 -->
+      <circle cx="-88"  cy="-118" r="13"/>   <!-- N7 -->
+    </g>
+
+    <!-- Satellite MULE node (smaller, off the main cluster) -->
+    <g fill="#FFFFFF" fill-opacity="0.30"
+       stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.8"
+       stroke-dasharray="2 2">
+      <circle cx="222" cy="-68" r="10"/>
+    </g>
+    <text x="245" y="-66"
+          font-family="'JetBrains Mono','SF Mono','Menlo',monospace"
+          font-size="10"
+          font-weight="600"
+          fill="#FFFFFF"
+          fill-opacity="0.80"
+          letter-spacing="1">
+      MULE
+    </text>
+
+    <!-- Inner controller nodes (3, slightly larger + filled to read as 'hubs') -->
+    <g fill="#FFFFFF" fill-opacity="0.65"
+       stroke="#FFFFFF" stroke-opacity="1" stroke-width="2">
+      <circle cx="68"  cy="-42" r="11"/>   <!-- C1 -->
+      <circle cx="-34" cy="8"   r="11"/>   <!-- C2 -->
+      <circle cx="20"  cy="72"  r="11"/>   <!-- C3 -->
+    </g>
+
+    <!-- Flagged "fraud seed" node (top): solid white with glow -->
+    <g filter="url(#fraudGlow)">
+      <circle cx="0" cy="-150" r="19"
+              fill="#FFFFFF"
+              stroke="#FFFFFF" stroke-opacity="0.40" stroke-width="6"/>
+      <circle cx="0" cy="-150" r="6" fill="#C40000"/>
+    </g>
+
+    <!-- Label above the flagged node -->
+    <text x="0" y="-182"
+          text-anchor="middle"
+          font-family="'JetBrains Mono','SF Mono','Menlo',monospace"
+          font-size="12"
+          font-weight="600"
+          fill="#FFFFFF"
+          fill-opacity="0.90"
+          letter-spacing="1">
+      RING SEED
+    </text>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- FOOTER STRIP                                                 -->
+  <!-- ============================================================ -->
+
+  <!-- Thin divider -->
+  <line x1="80" y1="555" x2="1200" y2="555"
+        stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1"/>
+
+  <!-- Repo handle -->
+  <text x="80" y="595"
+        font-family="'JetBrains Mono','SF Mono','Menlo',monospace"
+        font-size="20"
+        font-weight="500"
+        fill="#FFFFFF"
+        fill-opacity="0.90">
+    github.com/SantanderAI/gen-fraud-graph
+  </text>
+
+  <!-- SantanderAI wordmark (text-only, no proprietary logo) -->
+  <text x="1200" y="595"
+        text-anchor="end"
+        font-family="'Inter','Helvetica Neue','Arial',sans-serif"
+        font-size="24"
+        font-weight="700"
+        letter-spacing="2"
+        fill="#FFFFFF">
+    Santander<tspan font-weight="300">AI</tspan>
+  </text>
+</svg>

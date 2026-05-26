@@ -1,0 +1,87 @@
+name: Bug report
+description: Report a reproducible problem with gen_fraud_graph
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill in the
+        sections below — the more reproducibility info you provide, the
+        faster we can help.
+
+        > For security vulnerabilities, do NOT open a public issue. Follow
+        > the process in [SECURITY.md](../blob/main/SECURITY.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear, concise description of the bug.
+      placeholder: When I run `gen-fraud-graph --scale 0.01`, the process crashes…
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal commands or code that trigger the issue.
+      placeholder: |
+        1. `pip install gen-fraud-graph==0.1.0`
+        2. Run `gen-fraud-graph --scale 0.001 --workers 2`
+        3. See traceback
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour (incl. full traceback if any)
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: gen_fraud_graph version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.11.9"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5 / Ubuntu 22.04 / Windows 11"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have read the documentation in the README
+          required: true
+        - label: I agree to follow the project's Code of Conduct
+          required: true

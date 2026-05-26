@@ -1,0 +1,103 @@
+# Copyright (c) 2026 Santander Group
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gen-fraud-graph"
+version = "0.1.0"
+description = "Synthetic fraud graph generator for benchmarking graph-based fraud detection models"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Santander AI Lab", email = "opensource@gruposantander.com"},
+]
+keywords = [
+    "machine-learning",
+    "artificial-intelligence",
+    "fraud-detection",
+    "graph-neural-network",
+    "synthetic-data",
+    "financial-crime",
+    "anti-money-laundering",
+    "anomaly-detection",
+    "gnn",
+    "deep-learning",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+local = [
+    "sentence-transformers>=2.2.0",
+]
+openai = [
+    "openai>=1.0.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+    "coverage>=7.0",
+]
+all = [
+    "gen-fraud-graph[local,openai,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/SantanderAI/gen-fraud-graph"
+Repository = "https://github.com/SantanderAI/gen-fraud-graph"
+Issues = "https://github.com/SantanderAI/gen-fraud-graph/issues"
+Changelog = "https://github.com/SantanderAI/gen-fraud-graph/blob/main/CHANGELOG.md"
+
+[project.scripts]
+gen-fraud-graph = "gen_fraud_graph.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=gen_fraud_graph --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["gen_fraud_graph"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

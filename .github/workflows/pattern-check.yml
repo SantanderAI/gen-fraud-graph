@@ -1,0 +1,99 @@
+# Copyright (c) 2026 Santander Group
+# SPDX-License-Identifier: Apache-2.0
+#
+# Internal-pattern scan: blocks PRs that introduce internal corporate URLs,
+# internal IP ranges, internal hostnames or internal email domains.
+#
+# Allowlisted public contacts live in `.github/pattern-check-allowlist.txt`
+# (one literal line per allowlisted match — NOT a regex).
+#
+# IMPORTANT (Gotcha): the only excluded path is THIS workflow file itself.
+# Do NOT `--exclude-dir=.github/workflows` wholesale — that hides the most
+# sensitive area of the repo.
+#
+# Replace action references with SHA digests before publishing.
+
+name: Pattern check
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  internal-patterns:
+    name: Scan for internal patterns
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Run internal-pattern scan
+        run: |
+          set -euo pipefail
+
+          SELF=".github/workflows/pattern-check.yml"
+          ALLOWLIST=".github/pattern-check-allowlist.txt"
+
+          # Patterns that must NEVER appear in a public repo.
+          # Tune to your organisation's actual internal namespaces.
+          PATTERNS=(
+            # Internal Santander GitHub orgs / teams (substring match)
+            'santander-group-sds-gln'
+            'santander-group-shared-assets'
+            'gr_almnxtgn_'
+            # Internal CI/CD / template markers
+            '\[--gluontask--\]'
+            'OAM-CI-ID'
+            '\.gluon/'
+            'gluon-runner'
+            'gluon-app\[bot\]'
+            # Internal IPv4 ranges (RFC1918) — adjust for your context
+            '\b10\.[0-9]+\.[0-9]+\.[0-9]+\b'
+            '\b172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]+\.[0-9]+\b'
+            '\b192\.168\.[0-9]+\.[0-9]+\b'
+            # Internal hostnames / TLDs (examples — replace with real ones)
+            '\.corp\.santander\.com'
+            '\.intranet\.santander\.com'
+            # Internal Artifactory / registries
+            'artifactory\.santander\.'
+          )
+
+          # Build single ERE alternation
+          PATTERN_ERE=$(IFS='|'; echo "${PATTERNS[*]}")
+
+          echo "Pattern: $PATTERN_ERE"
+          echo
+
+          tmp_hits=$(mktemp)
+          # `--exclude` only the scan-definition file itself; do NOT exclude the
+          # whole .github/workflows dir.
+          grep -RInE --exclude="pattern-check.yml" \
+                     --exclude-dir=.git \
+                     --exclude-dir=node_modules \
+                     "$PATTERN_ERE" . > "$tmp_hits" || true
+
+          if [ ! -s "$tmp_hits" ]; then
+            echo "OK: no internal patterns detected."
+            exit 0
+          fi
+
+          # Filter out allowlisted literal lines, if the allowlist file exists.
+          if [ -f "$ALLOWLIST" ]; then
+            grep -vFf "$ALLOWLIST" "$tmp_hits" > "$tmp_hits.filtered" || true
+            mv "$tmp_hits.filtered" "$tmp_hits"
+          fi
+
+          if [ -s "$tmp_hits" ]; then
+            echo "FAIL: internal-pattern matches found (not in allowlist):"
+            echo
+            cat "$tmp_hits"
+            exit 1
+          fi
+
+          echo "OK: all matches were allowlisted."

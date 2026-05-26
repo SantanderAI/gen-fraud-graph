@@ -1,0 +1,72 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.windsurf/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+pip-wheel-metadata/
+MANIFEST
+
+# Test / coverage artefacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.cache/
+.tox/
+.nox/
+
+# Mypy / Ruff caches
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+
+# Output of the generator itself
+data/
+*.csv
+*.csv.zip
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OSPO readiness reports (kept out of public repo)
+OPENSOURCE_READINESS_REPORT*.html
+
+# Local-only OSS pre-publication artefacts (drafts of GOVERNANCE.md, CLA.md, runbook)
+oss-publication/
