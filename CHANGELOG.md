@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Preserve all generated account and transaction rows when the requested totals do not divide evenly across worker batches.
+
 ## [0.1.0] - 2026-05-26
 
 ### Added

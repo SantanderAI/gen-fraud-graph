@@ -37,6 +37,28 @@ NORMAL_DESCRIPTIONS: list[str] = [
 
 
 # ---------------------------------------------------------------------------
+# Workload planning helpers
+# ---------------------------------------------------------------------------
+
+
+def _split_workload(total: int, num_shards: int) -> list[tuple[int, int]]:
+    """Split ``total`` rows across ``num_shards`` shards without dropping rows."""
+    if num_shards <= 0:
+        raise ValueError("num_shards must be greater than zero")
+
+    base, remainder = divmod(total, num_shards)
+    shards: list[tuple[int, int]] = []
+    start = 0
+
+    for shard_idx in range(num_shards):
+        count = base + (1 if shard_idx < remainder else 0)
+        shards.append((start, count))
+        start += count
+
+    return shards
+
+
+# ---------------------------------------------------------------------------
 # Worker functions (must be top-level for multiprocessing)
 # ---------------------------------------------------------------------------
 
@@ -272,22 +294,21 @@ class FraudGraphGenerator:
         cfg = self.cfg
         print("\n[Phase 1] Generating accounts...")
 
-        acc_per_worker = cfg.num_accounts // cfg.workers
-        acc_per_batch = acc_per_worker // cfg.batches_per_worker
+        shard_plan = _split_workload(cfg.num_accounts, cfg.workers * cfg.batches_per_worker)
 
         with ProcessPoolExecutor(max_workers=cfg.workers) as pool:
             futures = []
             for w in range(cfg.workers):
                 for b in range(cfg.batches_per_worker):
                     global_idx = w * cfg.batches_per_worker + b
-                    start_id = global_idx * acc_per_batch
+                    start_id, count = shard_plan[global_idx]
                     futures.append(
                         pool.submit(
                             _generate_accounts_chunk,
                             w,
                             b,
                             start_id,
-                            acc_per_batch,
+                            count,
                             cfg.embedding_provider,
                             cfg.embedding_dim,
                             cfg.output_dir,
@@ -301,22 +322,21 @@ class FraudGraphGenerator:
         cfg = self.cfg
         print("\n[Phase 2] Generating transactions...")
 
-        tx_per_worker = cfg.num_transactions // cfg.workers
-        tx_per_batch = tx_per_worker // cfg.batches_per_worker
+        shard_plan = _split_workload(cfg.num_transactions, cfg.workers * cfg.batches_per_worker)
 
         with ProcessPoolExecutor(max_workers=cfg.workers) as pool:
             futures = []
             for w in range(cfg.workers):
                 for b in range(cfg.batches_per_worker):
                     global_idx = w * cfg.batches_per_worker + b
-                    start_id = global_idx * tx_per_batch
+                    start_id, count = shard_plan[global_idx]
                     futures.append(
                         pool.submit(
                             _generate_transactions_chunk,
                             w,
                             b,
                             start_id,
-                            tx_per_batch,
+                            count,
                             cfg.num_accounts,
                             cfg.embedding_provider,
                             cfg.embedding_dim,

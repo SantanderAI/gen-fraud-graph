@@ -15,7 +15,7 @@ import pytest
 from gen_fraud_graph.config import Config
 from gen_fraud_graph.embeddings import EmbeddingGenerator
 from gen_fraud_graph.exporters import get_headers, write_output
-from gen_fraud_graph.generator import FraudGraphGenerator
+from gen_fraud_graph.generator import FraudGraphGenerator, _split_workload
 from gen_fraud_graph.typologies import FraudRingGenerator
 from gen_fraud_graph.verify import verify_fraud_patterns
 
@@ -71,6 +71,17 @@ class TestConfig:
         assert cfg.num_accounts == 1_000
         assert cfg.num_transactions == 9_000
         assert cfg.num_fraud_rings >= 10
+
+
+class TestWorkloadPlanning:
+    def test_split_workload_distributes_remainder(self):
+        shards = _split_workload(10, 3)
+        assert shards == [(0, 4), (4, 3), (7, 3)]
+        assert sum(count for _, count in shards) == 10
+
+    def test_split_workload_handles_exact_division(self):
+        shards = _split_workload(12, 4)
+        assert shards == [(0, 3), (3, 3), (6, 3), (9, 3)]
 
 
 # ---------------------------------------------------------------------------
