@@ -267,6 +267,7 @@ class FraudGraphGenerator:
         print(f"  Accounts     : {cfg.num_accounts:,}")
         print(f"  Transactions : {cfg.num_transactions:,}")
         print(f"  Fraud rings  : {cfg.num_fraud_rings:,}")
+        print(f"  Hardness     : {cfg.hardness}")
         print(f"  Format       : {cfg.output_format}")
         print(f"  Embedding    : {cfg.embedding_provider}")
         print(f"  Workers      : {cfg.workers}")
@@ -357,6 +358,9 @@ class FraudGraphGenerator:
         fraud_gen = FraudRingGenerator(
             num_rings=cfg.num_fraud_rings,
             depth_range=cfg.fraud_ring_depth_range,
+            amount_jitter=cfg.amount_jitter,
+            ring_overlap=cfg.ring_overlap,
+            decoy_ratio=cfg.decoy_ratio,
         )
         n_tx, _ = fraud_gen.generate(
             max_account_id=cfg.num_accounts,

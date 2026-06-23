@@ -70,6 +70,7 @@ Changelog = "https://github.com/SantanderAI/gen-fraud-graph/blob/main/CHANGELOG.
 
 [project.scripts]
 gen-fraud-graph = "gen_fraud_graph.cli:main"
+gen-fraud-graph-evaluate = "gen_fraud_graph.evaluate:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
