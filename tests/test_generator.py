@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import csv
 import os
+import random
 import shutil
 import tempfile
 
@@ -175,6 +176,29 @@ class TestFraudRings:
         assert len(rows) == 3
         assert "pattern_id" in rows[0]
         assert "involved_accounts" in rows[0]
+
+    def test_rings_use_disjoint_accounts(self, tmp_dir):
+        # Each ring must occupy its own accounts. Overlapping ranges merge two
+        # rings into a single non-cycle component and make the per-ring
+        # involved_accounts labels ambiguous.
+        random.seed(0)
+        emb = EmbeddingGenerator("fake", dim=8)
+        gen = FraudRingGenerator(num_rings=15, depth_range=(4, 4))
+        gen.generate(
+            max_account_id=80,
+            start_tx_id=0,
+            embedder=emb,
+            output_dir=tmp_dir,
+        )
+        with open(os.path.join(tmp_dir, "fraud", "fraud_cases.csv")) as fh:
+            rows = list(csv.DictReader(fh))
+        seen: set[str] = set()
+        for row in rows:
+            accounts = row["involved_accounts"].split("|")
+            assert seen.isdisjoint(
+                accounts
+            ), f"{row['pattern_id']} reuses accounts from an earlier ring"
+            seen.update(accounts)
 
 
 # ---------------------------------------------------------------------------

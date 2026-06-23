@@ -314,18 +314,20 @@ class TestTypologiesExtra:
             header = next(csv.reader(fh))
         assert "~from" in header
 
-    def test_small_max_account_id(self, tmp_dir):
-        """max_account_id < depth+1 must take the start_node=0 fallback."""
+    def test_oversubscribed_rings_raise(self, tmp_dir):
+        """When the rings need more distinct accounts than exist they can't be
+        packed disjointly, so generate() must raise rather than emit rings that
+        reference nonexistent accounts."""
         emb = EmbeddingGenerator("fake", dim=16)
         gen = FraudRingGenerator(num_rings=2, depth_range=(4, 4))
-        n_tx, _ = gen.generate(
-            max_account_id=3,
-            start_tx_id=0,
-            embedder=emb,
-            output_dir=tmp_dir,
-            fmt="csv",
-        )
-        assert n_tx > 0
+        with pytest.raises(ValueError, match="distinct"):
+            gen.generate(
+                max_account_id=3,
+                start_tx_id=0,
+                embedder=emb,
+                output_dir=tmp_dir,
+                fmt="csv",
+            )
 
     def test_compress(self, tmp_dir):
         emb = EmbeddingGenerator("fake", dim=16)

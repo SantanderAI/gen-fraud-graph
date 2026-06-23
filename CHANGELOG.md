@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Fraud rings no longer draw overlapping account ranges. Each ring picked a contiguous block of accounts without excluding accounts already used by earlier rings, so ring ranges could overlap: two rings merged into a single non-cycle component and their `involved_accounts` labels shared accounts. Rings are now placed on disjoint ranges.
 - Corrected the README installation section: `pip install gen-fraud-graph` fails because the package is not yet published to PyPI, so the docs now lead with the from-source install (`uv pip install -e`) and note that the PyPI release is pending.
 
 ## [0.1.0] - 2026-05-26

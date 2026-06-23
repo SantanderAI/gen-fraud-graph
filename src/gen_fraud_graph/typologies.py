@@ -85,18 +85,28 @@ class FraudRingGenerator:
         tx_rows: list[list] = []
         case_rows: list[list] = []
         current_tx_id = start_tx_id
+        # Allocate every ring's accounts up front from one pool of distinct
+        # ids, then give each ring its own slice. Overlapping ranges would
+        # merge two rings into a single non-cycle component and make the
+        # per-ring involved_accounts labels ambiguous.
+        min_d, max_d = self.depth_range
+        depths = [random.randint(min_d, max_d) for _ in range(self.num_rings)]
+        total_needed = sum(depths)
+        if total_needed > max_account_id:
+            raise ValueError(
+                f"{self.num_rings} fraud rings need {total_needed} distinct "
+                f"accounts but only {max_account_id} exist; lower the ring "
+                f"count or raise the account scale"
+            )
+        account_pool = random.sample(range(max_account_id), total_needed)
+        pool_offset = 0
 
         for pattern_id in tqdm(range(self.num_rings), desc="Generating fraud rings"):
-            min_d, max_d = self.depth_range
-            depth = random.randint(min_d, max_d)
+            depth = depths[pattern_id]
+            ring_ids = account_pool[pool_offset : pool_offset + depth]
+            pool_offset += depth
 
-            # Pick a contiguous range of accounts for the ring
-            if max_account_id < depth + 1:
-                start_node = 0
-            else:
-                start_node = random.randint(0, max_account_id - depth - 1)
-
-            accounts = [f"acc_{start_node + d}" for d in range(depth)]
+            accounts = [f"acc_{i}" for i in ring_ids]
             involved = "|".join(accounts)
 
             batch_texts: list[str] = []
