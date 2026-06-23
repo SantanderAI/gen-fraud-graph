@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Corrected the README installation section: `pip install gen-fraud-graph` fails because the package is not yet published to PyPI, so the docs now lead with the from-source install (`uv pip install -e`) and note that the PyPI release is pending.
+
 ## [0.1.0] - 2026-05-26
 
 ### Added

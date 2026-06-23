@@ -49,24 +49,30 @@ The generator creates three types of data:
 
 ### Installation
 
-```bash
-pip install gen-fraud-graph
-```
+> **Note:** `gen-fraud-graph` is not yet published to PyPI, so `pip install gen-fraud-graph` will fail with `No matching distribution found`. Until the first PyPI release, install from source as shown below. The PyPI badge above is pre-provisioned for the planned release.
 
-With optional embedding providers:
-```bash
-pip install 'gen-fraud-graph[local]'    # SentenceTransformers (local model)
-pip install 'gen-fraud-graph[openai]'   # OpenAI API embeddings
-pip install 'gen-fraud-graph[all]'      # Everything including dev tools
-```
-
-Or from source using [uv](https://github.com/astral-sh/uv):
+Install from source using [uv](https://github.com/astral-sh/uv):
 ```bash
 git clone https://github.com/SantanderAI/gen-fraud-graph.git
 cd gen-fraud-graph
 uv venv && source .venv/bin/activate
 uv pip install -e '.[dev]'
 ```
+
+With optional embedding providers (from the cloned source directory):
+```bash
+uv pip install -e '.[local]'    # SentenceTransformers (local model)
+uv pip install -e '.[openai]'   # OpenAI API embeddings
+uv pip install -e '.[all]'      # Everything including dev tools
+```
+
+If you prefer plain `pip` over `uv`, the source install works the same way:
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e '.[dev]'
+```
+
+Once the package is published, `pip install gen-fraud-graph` will be the recommended path.
 
 ### CLI Usage
 
