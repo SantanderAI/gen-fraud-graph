@@ -12,8 +12,10 @@ fraud amounts are jittered.
 from __future__ import annotations
 
 import csv
+import json
 import os
 import shutil
+import sys
 import tempfile
 
 import pytest
@@ -22,10 +24,13 @@ from gen_fraud_graph.config import Config
 from gen_fraud_graph.embeddings import EmbeddingGenerator
 from gen_fraud_graph.evaluate import (
     FraudRing,
+    discover_account_universe,
     evaluate,
     evaluate_dataset,
     load_flagged_accounts,
     load_fraud_rings,
+    main,
+    run_cli,
 )
 from gen_fraud_graph.typologies import FraudRingGenerator
 
@@ -123,9 +128,7 @@ def test_load_fraud_rings_roundtrip(tmp_dir):
     path = os.path.join(tmp_dir, "fraud_cases.csv")
     with open(path, "w", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(
-            ["pattern_id", "start_acc_id", "pattern_type", "depth", "involved_accounts"]
-        )
+        w.writerow(["pattern_id", "start_acc_id", "pattern_type", "depth", "involved_accounts"])
         w.writerow(["pat_0", "acc_1", "cycle", "3", "acc_1|acc_2|acc_3"])
     rings = load_fraud_rings(path)
     assert len(rings) == 1
@@ -149,15 +152,134 @@ def test_load_flagged_accounts_plain_and_csv(tmp_dir):
     assert load_flagged_accounts(csv_path) == {"acc_9", "acc_8"}
 
 
+def test_load_flagged_accounts_edge_csv(tmp_dir):
+    """A CSV with src_id/dst_id columns flags both endpoints of each edge."""
+    csv_path = os.path.join(tmp_dir, "edges.csv")
+    with open(csv_path, "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["src_id", "dst_id", "amount"])
+        w.writerow(["acc_1", "acc_2", "9999.00"])
+        w.writerow(["acc_2", "acc_3", "9999.00"])
+        w.writerow(["", "acc_4", "0"])  # blank src is ignored, dst still flagged
+    assert load_flagged_accounts(csv_path) == {"acc_1", "acc_2", "acc_3", "acc_4"}
+
+
+def test_load_flagged_accounts_csv_without_header(tmp_dir):
+    """A comma-bearing file with no recognised id column reads the first column."""
+    csv_path = os.path.join(tmp_dir, "unknown.csv")
+    with open(csv_path, "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["foo", "bar"])  # unrecognised header -> treated as first-column data
+        w.writerow(["acc_7", "ignored"])
+        w.writerow(["", "skip"])  # blank first cell is skipped
+    assert load_flagged_accounts(csv_path) == {"foo", "acc_7"}
+
+
+def test_discover_account_universe(tmp_dir):
+    """discover_account_universe reads account ids from <data>/accounts/*.csv."""
+    assert discover_account_universe(tmp_dir) is None  # no accounts dir yet
+
+    acc_dir = os.path.join(tmp_dir, "accounts")
+    os.makedirs(acc_dir)
+    with open(os.path.join(acc_dir, "accounts_0.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["account_id", "name"])
+        w.writerow(["acc_1", "Alice"])
+        w.writerow(["acc_2", "Bob"])
+    # A non-CSV file in the directory is ignored.
+    with open(os.path.join(acc_dir, "README.txt"), "w") as fh:
+        fh.write("not a csv")
+
+    assert discover_account_universe(tmp_dir) == {"acc_1", "acc_2"}
+
+
+def test_evaluate_ignores_empty_ring():
+    """A ring with no involved accounts is skipped at the ring level."""
+    rings = [
+        FraudRing("R1", frozenset({"a1", "a2"})),
+        FraudRing("R_empty", frozenset()),
+    ]
+    m = evaluate(rings, {"a1", "a2"})
+    assert m["ring"]["detected"] == 1
+    assert m["ring"]["total"] == 2
+
+
+def test_evaluate_dataset_missing_fraud_cases(tmp_dir):
+    """evaluate_dataset raises a clear error when fraud_cases.csv is absent."""
+    flagged = os.path.join(tmp_dir, "flagged.txt")
+    with open(flagged, "w") as fh:
+        fh.write("acc_1\n")
+    with pytest.raises(FileNotFoundError, match="fraud_cases.csv"):
+        evaluate_dataset(tmp_dir, flagged)
+
+
+def _build_dataset(root):
+    """Write a minimal dataset (fraud/ + accounts/) and a flagged file.
+
+    Ground truth: one ring {acc_1, acc_2}. Universe adds one legit acc_3.
+    Flagged: acc_1, acc_2 (perfect detection, one true negative).
+    """
+    fraud_dir = os.path.join(root, "fraud")
+    os.makedirs(fraud_dir)
+    with open(os.path.join(fraud_dir, "fraud_cases.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["pattern_id", "start_acc_id", "pattern_type", "depth", "involved_accounts"])
+        w.writerow(["pat_0", "acc_1", "cycle", "2", "acc_1|acc_2"])
+    acc_dir = os.path.join(root, "accounts")
+    os.makedirs(acc_dir)
+    with open(os.path.join(acc_dir, "accounts_0.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["account_id"])
+        for aid in ("acc_1", "acc_2", "acc_3"):
+            w.writerow([aid])
+    flagged = os.path.join(root, "flagged.txt")
+    with open(flagged, "w") as fh:
+        fh.write("acc_1\nacc_2\n")
+    return flagged
+
+
+def test_run_cli_human_summary(tmp_dir, capsys):
+    """run_cli prints a human-readable summary and returns exit code 0."""
+    flagged = _build_dataset(tmp_dir)
+    rc = run_cli(["--data", tmp_dir, "--flagged", flagged])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "gen_fraud_graph evaluate" in out
+    assert "Account level:" in out
+    assert "Ring level" in out
+    assert "tn=1" in out  # acc_3 is the single true negative
+
+
+def test_run_cli_json_output(tmp_dir, capsys):
+    """run_cli --json prints valid JSON metrics."""
+    flagged = _build_dataset(tmp_dir)
+    rc = run_cli(["--data", tmp_dir, "--flagged", flagged, "--json", "--ring-threshold", "0.5"])
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["account"]["f1"] == pytest.approx(1.0)
+    assert payload["ring_threshold"] == pytest.approx(0.5)
+    assert payload["confusion"]["true_negatives"] == 1
+
+
+def test_main_entrypoint(tmp_dir, capsys, monkeypatch):
+    """main() parses sys.argv and exits 0 on success."""
+    flagged = _build_dataset(tmp_dir)
+    monkeypatch.setattr(
+        sys, "argv", ["gen-fraud-graph-evaluate", "--data", tmp_dir, "--flagged", flagged]
+    )
+    with pytest.raises(SystemExit) as exc:
+        main()
+    assert exc.value.code == 0
+    assert "gen_fraud_graph evaluate" in capsys.readouterr().out
+
+
 def test_evaluate_dataset_end_to_end(tmp_dir):
     """evaluate_dataset reads fraud_cases.csv and a flagged file from disk."""
     fraud_dir = os.path.join(tmp_dir, "fraud")
     os.makedirs(fraud_dir)
     with open(os.path.join(fraud_dir, "fraud_cases.csv"), "w", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(
-            ["pattern_id", "start_acc_id", "pattern_type", "depth", "involved_accounts"]
-        )
+        w.writerow(["pattern_id", "start_acc_id", "pattern_type", "depth", "involved_accounts"])
         w.writerow(["pat_0", "acc_1", "cycle", "2", "acc_1|acc_2"])
     flagged = os.path.join(tmp_dir, "flagged.txt")
     with open(flagged, "w") as fh:

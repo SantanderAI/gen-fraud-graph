@@ -330,16 +330,20 @@ def _print_summary(metrics: dict) -> None:
     print(f"  precision : {acc['precision']:.4f}")
     print(f"  recall    : {acc['recall']:.4f}")
     print(f"  f1        : {acc['f1']:.4f}")
-    print(f"  tp/fp/fn  : {acc['true_positives']}/{acc['false_positives']}/"
-          f"{acc['false_negatives']}")
+    print(
+        f"  tp/fp/fn  : {acc['true_positives']}/{acc['false_positives']}/"
+        f"{acc['false_negatives']}"
+    )
     print(f"Ring level (threshold {ring['threshold']}):")
     print(f"  precision : {ring['precision']:.4f}")
     print(f"  recall    : {ring['recall']:.4f}")
     print(f"  f1        : {ring['f1']:.4f}")
     print(f"  detected  : {ring['detected']}/{ring['total']}")
     tn = conf["true_negatives"]
-    print(f"Confusion : tp={conf['true_positives']} fp={conf['false_positives']} "
-          f"fn={conf['false_negatives']} tn={tn if tn is not None else 'unknown'}")
+    print(
+        f"Confusion : tp={conf['true_positives']} fp={conf['false_positives']} "
+        f"fn={conf['false_negatives']} tn={tn if tn is not None else 'unknown'}"
+    )
     print("=" * 50)
 
 
