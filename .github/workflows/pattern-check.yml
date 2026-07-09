@@ -10,8 +10,6 @@
 # IMPORTANT (Gotcha): the only excluded path is THIS workflow file itself.
 # Do NOT `--exclude-dir=.github/workflows` wholesale — that hides the most
 # sensitive area of the repo.
-#
-# Replace action references with SHA digests before publishing.
 
 name: Pattern check
 

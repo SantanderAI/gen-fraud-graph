@@ -16,17 +16,19 @@ on:
   pull_request_target:
     types: [opened, closed, synchronize]
 
-# contents: write is required so the bot can commit the signature file back.
-permissions:
-  actions: write
-  contents: write
-  pull-requests: write
-  statuses: write
+# contents: write is required so the bot can commit the signature file back;
+# all permissions are granted at job level only (top-level default: none).
+permissions: {}
 
 jobs:
   cla:
     name: CLA Assistant
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
+      statuses: write
     if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA') || github.event_name == 'pull_request_target'
     steps:
       - name: CLA Assistant

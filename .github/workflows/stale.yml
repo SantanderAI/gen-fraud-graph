@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Mark and close stale issues / PRs.
-# Replace action references with SHA digests before publishing.
 
 name: Stale
 

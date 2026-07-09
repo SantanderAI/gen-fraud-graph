@@ -69,12 +69,14 @@ This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDU
 
 ### PR Requirements
 
-All pull requests must pass the following automated checks before merge:
+All pull requests must pass the following automated checks (as they appear in
+the PR checks panel) before merge:
 
-- [ ] **CI lint and tests** (`ci-lint-test`) — Linting, formatting, unit tests
-- [ ] **Security scan** (`ci-security`) — Secret scanning, SAST (CodeQL), dependency audit
-- [ ] **License check** (`ci-license`) — Dependency license compatibility
-- [ ] **Pattern check** (`ci-pattern-check`) — No internal URLs, IPs, or corporate email addresses
+- [ ] **`Lint & format & type-check`** and **`Test (Python 3.10/3.11/3.12)`** — Ruff, Black, Mypy, unit tests with coverage
+- [ ] **`Analyze (python)`** — SAST (CodeQL)
+- [ ] **`pip-audit`** — Dependency vulnerability audit
+- [ ] **`Dependency license allowlist`** and **`SPDX headers`** — License compliance
+- [ ] **`Scan for internal patterns`** — No internal URLs, IPs, or corporate email addresses
 - [ ] **CLA signed** (for external contributors)
 
 Additionally:

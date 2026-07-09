@@ -2,10 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Lint + format + type-check + tests + coverage.
-# NOTE: All third-party action references are pinned to a major version tag here
-#       for readability; before publishing the repo, replace every `@v<N>` with
-#       the corresponding 40-char commit SHA (use `pin-github-action` or
-#       `sethvargo/pin-github-action`).
 
 name: CI
 

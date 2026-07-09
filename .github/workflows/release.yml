@@ -6,7 +6,10 @@
 # "Manage publishing" → "Trusted publishers" with this repo, this workflow
 # file name (`release.yml`) and environment name (`pypi`).
 #
-# Replace action references with SHA digests before publishing.
+# The publish job only runs when the repository variable `PYPI_PUBLISH` is
+# set to `true` (Settings → Secrets and variables → Actions → Variables).
+# Set it after the PyPI trusted publisher is configured; until then a GitHub
+# Release only builds and attaches the distributions.
 
 name: Release
 
@@ -44,6 +47,7 @@ jobs:
   publish-pypi:
     name: Publish to PyPI
     needs: [build]
+    if: vars.PYPI_PUBLISH == 'true'
     runs-on: ubuntu-latest
     environment:
       name: pypi

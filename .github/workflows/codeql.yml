@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Static analysis with GitHub CodeQL.
-# Replace `@v3` action references with SHA digests before publishing.
 
 name: CodeQL
 

@@ -6,8 +6,10 @@ If you discover a security vulnerability in this project, please report it respo
 
 ### How to Report
 
-1. **Email**: Send a detailed report to **security-opensource@gruposantander.com**
-2. **GitHub Security Advisories**: Alternatively, use [GitHub Security Advisories](../../security/advisories/new) to report privately.
+Please use **GitHub's private vulnerability reporting** as the primary channel:
+
+1. **GitHub Private Vulnerability Reporting** (preferred): open the repository's **Security** tab → **Report a vulnerability**, or use [this link](../../security/advisories/new). This creates a private advisory visible only to you and the maintainers.
+2. **Email** (alternative): if you cannot use GitHub, email **opensource@gruposantander.com**.
 
 ### What to Include
 

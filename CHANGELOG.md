@@ -7,12 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Fraud rings no longer draw overlapping account ranges. Each ring picked a contiguous block of accounts without excluding accounts already used by earlier rings, so ring ranges could overlap: two rings merged into a single non-cycle component and their `involved_accounts` labels shared accounts. Rings are now placed on disjoint ranges.
-- Corrected the README installation section: `pip install gen-fraud-graph` fails because the package is not yet published to PyPI, so the docs now lead with the from-source install (`uv pip install -e`) and note that the PyPI release is pending.
-- Preserve all generated account and transaction rows when the requested totals do not divide evenly across worker batches.
-
-## [0.1.0] - 2026-05-26
+## [0.1.0] - 2026-07-06
 
 ### Added
 - Core 3-phase generation pipeline: accounts → transactions → fraud rings
@@ -39,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.github/dependabot.yml` — weekly Python and GitHub Actions updates
 - Issue templates (bug, feature) and PR template
 - Apache 2.0 LICENSE + NOTICE, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md, CODEOWNERS
+
+### Fixed
+- Fraud rings no longer draw overlapping account ranges. Each ring picked a contiguous block of accounts without excluding accounts already used by earlier rings, so ring ranges could overlap: two rings merged into a single non-cycle component and their `involved_accounts` labels shared accounts. Rings are now placed on disjoint ranges.
+- Corrected the README installation section: `pip install gen-fraud-graph` fails because the package is not yet published to PyPI, so the docs now lead with the from-source install (`uv pip install -e`) and note that the PyPI release is pending.
+- Preserve all generated account and transaction rows when the requested totals do not divide evenly across worker batches.
 
 [Unreleased]: https://github.com/SantanderAI/gen-fraud-graph/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/SantanderAI/gen-fraud-graph/releases/tag/v0.1.0

@@ -92,6 +92,13 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
 
+# numpy ≥ 2.5 ships PEP 695 `type` statements in its stubs, which mypy rejects
+# when targeting Python 3.10. Treat numpy as untyped instead.
+[[tool.mypy.overrides]]
+module = "numpy"
+follow_imports = "skip"
+follow_imports_for_stubs = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --cov=gen_fraud_graph --cov-report=term-missing"
