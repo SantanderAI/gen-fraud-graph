@@ -1,5 +1,7 @@
-# Generates a Software Bill of Materials for each published release and
-# attaches it as release assets in both standard formats (SPDX + CycloneDX).
+# Generates a Software Bill of Materials for each published release, stamps
+# Santander Group as document creator, signs a build provenance attestation
+# (Sigstore, verifiable with `gh attestation verify`) and attaches both
+# standard formats (SPDX + CycloneDX) as release assets.
 # Manual runs (workflow_dispatch) upload the SBOMs as workflow artifacts only.
 name: SBOM
 
@@ -10,12 +12,17 @@ on:
 
 permissions: {}
 
+env:
+  BASE: ${{ github.event.repository.name }}-${{ github.ref_name }}
+
 jobs:
   sbom:
-    name: Generate and attach SBOM
+    name: Generate, attest and attach SBOM
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # upload release assets
+      contents: write      # upload release assets
+      id-token: write      # sign the attestation (Sigstore)
+      attestations: write  # store the attestation
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
@@ -24,13 +31,40 @@ jobs:
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0.24.0
         with:
           format: spdx-json
-          output-file: ${{ github.event.repository.name }}-${{ github.ref_name }}.spdx.json
-          artifact-name: ${{ github.event.repository.name }}-${{ github.ref_name }}.spdx.json
-          upload-release-assets: ${{ github.event_name == 'release' }}
+          output-file: ${{ env.BASE }}.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0.24.0
         with:
           format: cyclonedx-json
-          output-file: ${{ github.event.repository.name }}-${{ github.ref_name }}.cdx.json
-          artifact-name: ${{ github.event.repository.name }}-${{ github.ref_name }}.cdx.json
-          upload-release-assets: ${{ github.event_name == 'release' }}
+          output-file: ${{ env.BASE }}.cdx.json
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Stamp Santander Group as document creator
+        run: |
+          jq '.creationInfo.creators += ["Organization: Santander Group"]' \
+            "$BASE.spdx.json" > tmp.json && mv tmp.json "$BASE.spdx.json"
+          jq '.metadata.authors = [{"name": "Open Source Santander AI", "email": "opensource@gruposantander.com"}]' \
+            "$BASE.cdx.json" > tmp.json && mv tmp.json "$BASE.cdx.json"
+      - name: Attest SBOM build provenance
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373  # v4.1.1
+        with:
+          subject-path: |
+            ${{ env.BASE }}.spdx.json
+            ${{ env.BASE }}.cdx.json
+      - name: Upload SBOMs as workflow artifacts (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: sboms
+          path: |
+            ${{ env.BASE }}.spdx.json
+            ${{ env.BASE }}.cdx.json
+      - name: Attach SBOMs to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "$BASE.spdx.json" "$BASE.cdx.json" --clobber
