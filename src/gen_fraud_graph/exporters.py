@@ -15,7 +15,7 @@ from typing import Literal
 
 def get_headers(
     doc_type: Literal["account", "transaction"],
-    fmt: Literal["csv", "neptune"],
+    fmt: Literal["csv", "neptune", "falkordb"],
 ) -> list[str]:
     """Return CSV column headers for *doc_type* in the given *fmt*."""
     if fmt == "neptune":
@@ -37,6 +37,25 @@ def get_headers(
             "amount:Double",
             "timestamp:String",
             "description:String",
+        ]
+    if fmt == "falkordb":
+        if doc_type == "account":
+            return [
+                "account_id:ID(Account)",
+                "customer_name:STRING",
+                "balance:DOUBLE",
+                "risk_score:DOUBLE",
+                "creation_date:STRING",
+            ]
+        return [
+            ":START_ID(Account)",
+            ":END_ID(Account)",
+            "tx_id:STRING",
+            "amount:DOUBLE",
+            "timestamp:STRING",
+            "description:STRING",
+            "embedding:STRING",
+            "is_fraud:BOOLEAN",
         ]
 
     # Default CSV

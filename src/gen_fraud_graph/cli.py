@@ -58,8 +58,12 @@ def main(argv: list[str] | None = None) -> None:
         "--format",
         type=str,
         default="csv",
-        choices=["csv", "neptune"],
-        help="Output format. 'csv' = generic CSV, 'neptune' = AWS Neptune bulk-load. Default: csv",
+        choices=["csv", "neptune", "falkordb"],
+        help=(
+            "Output format. 'csv' = generic CSV, "
+            "'neptune' = AWS Neptune bulk-load, "
+            "'falkordb' = FalkorDB bulk-loader schema CSV. Default: csv"
+        ),
     )
     parser.add_argument(
         "--fraud-rings",

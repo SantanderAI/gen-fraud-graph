@@ -22,8 +22,9 @@ class Config:
         embedding_dim: Dimensionality of generated embeddings.
         workers: Parallel processes for account/transaction generation.
         batches_per_worker: File chunks each worker produces.
-        output_format: ``"csv"`` (generic) or ``"neptune"`` (AWS Neptune
-            bulk-load headers).
+        output_format: ``"csv"`` (generic), ``"neptune"`` (AWS Neptune
+            bulk-load headers), or ``"falkordb"`` (FalkorDB bulk-loader
+            schema headers).
         compress: Whether to ZIP the output CSV files.
         output_dir: Destination directory for generated files.
     """
@@ -35,7 +36,7 @@ class Config:
     embedding_dim: int = 768
     workers: int = 1
     batches_per_worker: int = 1
-    output_format: Literal["csv", "neptune"] = "csv"
+    output_format: Literal["csv", "neptune", "falkordb"] = "csv"
     compress: bool = False
     output_dir: str = "data"
 

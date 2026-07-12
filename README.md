@@ -31,7 +31,7 @@ The generator creates three types of data:
 - **Fraud pattern injection** — Cyclic money-laundering rings with configurable depth (4–7 hops)
 - **Parallel generation** — Multi-process workers for fast generation on high-core machines
 - **Vector embeddings** — Three providers: `fake` (random, fast), `local` (SentenceTransformers), `openai` (API)
-- **Multiple formats** — Generic CSV or AWS Neptune bulk-load format
+- **Multiple formats** — Generic CSV, AWS Neptune bulk-load, or FalkorDB bulk-loader schema format
 - **Resume support** — Interrupted generation can resume from where it left off
 - **Privacy by design** — All data is 100% synthetic; no real financial data is used
 
@@ -88,6 +88,8 @@ gen-fraud-graph --scale 1.0 --workers 24 --output ./data
 
 # Neptune bulk-load format
 gen-fraud-graph --scale 0.01 --format neptune --output ./neptune_data
+# FalkorDB bulk-loader schema format
+gen-fraud-graph --scale 0.01 --format falkordb --output ./falkordb_data
 
 # Resume interrupted generation (skips completed files)
 gen-fraud-graph --scale 1.0 --workers 24 --skip-accounts --output ./data
@@ -102,7 +104,7 @@ gen-fraud-graph --scale 1.0 --workers 24 --skip-accounts --output ./data
 | `--output` | `data` | Output directory for generated CSV files. |
 | `--workers` | `1` | Number of parallel worker processes. |
 | `--batches` | `1` | Number of file chunks per worker. |
-| `--format` | `csv` | Output format: `csv` (generic) or `neptune` (AWS Neptune bulk-load). |
+| `--format` | `csv` | Output format: `csv` (generic), `neptune` (AWS Neptune bulk-load), or `falkordb` (FalkorDB bulk-loader schema). |
 | `--fraud-rings` | auto | Number of fraud rings. Default: auto-scaled from `--scale`. |
 | `--compress` | off | ZIP-compress output CSV files. |
 | `--skip-accounts` | off | Skip account generation (useful when resuming). |
@@ -183,6 +185,42 @@ data/
 | `pattern_type` | string | Always `"cycle"` |
 | `depth` | int | Number of hops in the ring (4–7) |
 | `involved_accounts` | string | Pipe-separated list of accounts |
+
+### FalkorDB bulk-loader schema (`--format falkordb`)
+
+`accounts/accounts_*.csv` header:
+
+```csv
+account_id:ID(Account),customer_name:STRING,balance:DOUBLE,risk_score:DOUBLE,creation_date:STRING
+```
+
+`transactions/transactions_*.csv` and `fraud/transactions_fraud.csv` header:
+
+```csv
+:START_ID(Account),:END_ID(Account),tx_id:STRING,amount:DOUBLE,timestamp:STRING,description:STRING,embedding:STRING,is_fraud:BOOLEAN
+```
+
+Row semantics:
+- normal transactions are emitted with `is_fraud=false`
+- injected fraud transactions are emitted with `is_fraud=true`
+- `embedding` remains a pipe-separated `STRING` to keep default comma-delimited loading simple
+
+Recommended import shape with `falkordb-bulk-loader`:
+- pass one `--nodes-with-label Account <accounts_csv>` per account shard
+- pass one `--relations-with-type TRANSFER <transactions_csv>` per transaction shard (including `fraud/transactions_fraud.csv`)
+- use `--enforce-schema`
+
+Example:
+
+```bash
+falkordb-bulk-insert FraudGraph \
+  --enforce-schema \
+  --nodes-with-label Account ./falkordb_data/accounts/accounts_0_0.csv \
+  --relations-with-type TRANSFER ./falkordb_data/transactions/transactions_0_0.csv \
+  --relations-with-type TRANSFER ./falkordb_data/fraud/transactions_fraud.csv
+```
+
+If you generated compressed outputs (`--compress`), unzip them before running the bulk loader.
 
 ---
 
