@@ -40,6 +40,15 @@ class TestGeneratorWorkers:
             header = next(csv.reader(fh))
         assert "~id" in header
 
+    def test_accounts_chunk_falkordb(self, tmp_dir):
+        _generate_accounts_chunk(0, 0, 0, 10, "fake", 16, tmp_dir, "falkordb")
+        path = os.path.join(tmp_dir, "accounts", "accounts_0_0.csv")
+        with open(path) as fh:
+            rows = list(csv.reader(fh))
+        assert rows[0][0] == "account_id:ID(Account)"
+        assert "risk_score:DOUBLE" in rows[0]
+        assert len(rows[1]) == len(rows[0]) == 5
+
     def test_accounts_chunk_resume_complete(self, tmp_dir):
         _generate_accounts_chunk(0, 0, 0, 5, "fake", 16, tmp_dir, "csv")
         msg = _generate_accounts_chunk(0, 0, 0, 5, "fake", 16, tmp_dir, "csv")
@@ -66,6 +75,17 @@ class TestGeneratorWorkers:
         with open(path) as fh:
             header = next(csv.reader(fh))
         assert "~from" in header
+
+    def test_transactions_chunk_falkordb(self, tmp_dir):
+        _generate_transactions_chunk(0, 0, 0, 20, 100, "fake", 16, tmp_dir, "falkordb")
+        path = os.path.join(tmp_dir, "transactions", "transactions_0_0.csv")
+        with open(path) as fh:
+            rows = list(csv.reader(fh))
+        assert rows[0][0] == ":START_ID(Account)"
+        assert rows[0][1] == ":END_ID(Account)"
+        assert rows[0][-1] == "is_fraud:BOOLEAN"
+        assert rows[1][-1] == "false"
+        assert len(rows[1]) == len(rows[0]) == 8
 
     def test_transactions_chunk_resume_complete(self, tmp_dir):
         _generate_transactions_chunk(0, 0, 0, 5, 50, "fake", 16, tmp_dir, "csv")

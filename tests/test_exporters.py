@@ -33,6 +33,18 @@ class TestExporters:
         assert "~from" in h
         assert "~to" in h
 
+    def test_falkordb_headers_account(self):
+        h = get_headers("account", "falkordb")
+        assert h[0] == "account_id:ID(Account)"
+        assert "customer_name:STRING" in h
+        assert "balance:DOUBLE" in h
+
+    def test_falkordb_headers_transaction(self):
+        h = get_headers("transaction", "falkordb")
+        assert h[0] == ":START_ID(Account)"
+        assert h[1] == ":END_ID(Account)"
+        assert "is_fraud:BOOLEAN" in h
+
     def test_write_output_csv(self, tmp_dir):
         path = os.path.join(tmp_dir, "test")
         write_output(path, ["a", "b"], [[1, 2], [3, 4]])

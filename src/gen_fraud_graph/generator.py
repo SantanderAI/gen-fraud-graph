@@ -191,16 +191,16 @@ def _generate_transactions_chunk(
                 desc = random.choice(NORMAL_DESCRIPTIONS)
                 batch_texts.append(desc)
 
-                row: list = [
-                    f"tx_{tx_uid}",
-                    src,
-                    dst,
-                    round(random.uniform(10, 500), 2),
-                    "2024-01-01T10:00:00",
-                    desc,
-                ]
+                amount = round(random.uniform(10, 500), 2)
+                timestamp = "2024-01-01T10:00:00"
+                tx_id = f"tx_{tx_uid}"
+
                 if fmt == "neptune":
-                    row.insert(3, "TRANSFER")
+                    row = [tx_id, src, dst, "TRANSFER", amount, timestamp, desc]
+                elif fmt == "falkordb":
+                    row = [src, dst, tx_id, amount, timestamp, desc]
+                else:
+                    row = [tx_id, src, dst, amount, timestamp, desc]
                 batch_rows.append(row)
 
             embeddings = embedder.generate(batch_texts)
@@ -209,6 +209,11 @@ def _generate_transactions_chunk(
             for idx, r in enumerate(batch_rows):
                 if fmt == "neptune":
                     final_rows.append(r)
+                elif fmt == "falkordb":
+                    vec = embeddings[idx]
+                    if isinstance(vec, np.ndarray):
+                        vec = vec.tolist()
+                    final_rows.append(r + ["|".join(map(str, vec)), "false"])
                 else:
                     vec = embeddings[idx]
                     if isinstance(vec, np.ndarray):

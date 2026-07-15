@@ -117,11 +117,15 @@ class FraudRingGenerator:
                 dst = accounts[(k + 1) % depth]
                 desc = random.choice(self._descriptions)
                 batch_texts.append(desc)
+                tx_id = f"tx_{current_tx_id}"
+                timestamp = "2024-01-01T12:00:00"
 
-                row: list = [f"tx_{current_tx_id}", src, dst]
                 if fmt == "neptune":
-                    row.append("TRANSFER")
-                row.extend([self.amount, "2024-01-01T12:00:00", desc])
+                    row = [tx_id, src, dst, "TRANSFER", self.amount, timestamp, desc]
+                elif fmt == "falkordb":
+                    row = [src, dst, tx_id, self.amount, timestamp, desc]
+                else:
+                    row = [tx_id, src, dst, self.amount, timestamp, desc]
                 batch_rows.append(row)
                 current_tx_id += 1
 
@@ -130,6 +134,11 @@ class FraudRingGenerator:
             for idx, r in enumerate(batch_rows):
                 if fmt == "neptune":
                     tx_rows.append(r)
+                elif fmt == "falkordb":
+                    vec = embeddings[idx]
+                    if isinstance(vec, np.ndarray):
+                        vec = vec.tolist()
+                    tx_rows.append(r + ["|".join(map(str, vec)), "true"])
                 else:
                     vec = embeddings[idx]
                     if isinstance(vec, np.ndarray):

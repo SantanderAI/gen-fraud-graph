@@ -87,6 +87,26 @@ class TestTypologiesExtra:
             header = next(csv.reader(fh))
         assert "~from" in header
 
+    def test_falkordb_format(self, tmp_dir):
+        emb = EmbeddingGenerator("fake", dim=16)
+        gen = FraudRingGenerator(num_rings=2, depth_range=(3, 3))
+        n_tx, _ = gen.generate(
+            max_account_id=50,
+            start_tx_id=0,
+            embedder=emb,
+            output_dir=tmp_dir,
+            fmt="falkordb",
+        )
+        assert n_tx > 0
+        path = os.path.join(tmp_dir, "fraud", "transactions_fraud.csv")
+        with open(path) as fh:
+            rows = list(csv.reader(fh))
+        assert rows[0][0] == ":START_ID(Account)"
+        assert rows[0][1] == ":END_ID(Account)"
+        assert rows[0][-1] == "is_fraud:BOOLEAN"
+        assert rows[1][-1] == "true"
+        assert len(rows[1]) == len(rows[0]) == 8
+
     def test_oversubscribed_rings_raise(self, tmp_dir):
         """When the rings need more distinct accounts than exist they can't be
         packed disjointly, so generate() must raise rather than emit rings that

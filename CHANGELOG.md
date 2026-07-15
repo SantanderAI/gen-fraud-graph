@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `falkordb` export format for CLI/API output, producing schema-enforced CSV headers compatible with `falkordb-bulk-loader --enforce-schema`.
+- FalkorDB transaction exports now include `is_fraud` markers (`false` for normal transactions, `true` for injected fraud edges) and schema-ready endpoint columns (`:START_ID(Account)`, `:END_ID(Account)`).
+
 ## [0.1.0] - 2026-07-06
 
 ### Added
