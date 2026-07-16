@@ -31,6 +31,9 @@ class Config:
     scale_factor: float = 1.0
     num_fraud_rings: int | None = None
     fraud_ring_depth_range: tuple[int, int] = (4, 7)
+    num_structuring_patterns: int | None = None
+    structuring_smurfs_range: tuple[int, int] = (3, 10)
+    structuring_amount_range: tuple[float, float] = (8_000.00, 9_900.00)
     embedding_provider: Literal["fake", "local", "openai"] = "fake"
     embedding_dim: int = 768
     workers: int = 1
@@ -48,3 +51,5 @@ class Config:
         self.num_transactions = int(90_000_000 * self.scale_factor)
         if self.num_fraud_rings is None:
             self.num_fraud_rings = max(10, int(1000 * self.scale_factor))
+        if self.num_structuring_patterns is None:
+            self.num_structuring_patterns = max(10, int(500 * self.scale_factor))

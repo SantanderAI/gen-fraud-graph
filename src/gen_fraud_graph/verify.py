@@ -47,19 +47,28 @@ def verify_fraud_patterns(
         reader = csv.DictReader(fh)
         for row in reader:
             pattern_id = row["pattern_id"]
+            pattern_type = row.get("pattern_type", "cycle")
             accounts = row["involved_accounts"].split("|")
             depth = int(row["depth"])
 
-            # Check that the cycle edges exist
-            for k in range(depth):
-                src = accounts[k]
-                dst = accounts[(k + 1) % depth]
-                if dst not in edges.get(src, set()):
-                    print(f"  FAIL: {pattern_id} — missing edge {src} -> {dst}")
-                    all_valid = False
-                    break
+            if pattern_type == "cycle":
+                for k in range(depth):
+                    src = accounts[k]
+                    dst = accounts[(k + 1) % depth]
+                    if dst not in edges.get(src, set()):
+                        print(f"  FAIL: {pattern_id} — missing edge {src} -> {dst}")
+                        all_valid = False
+                        break
+            elif pattern_type == "structuring":
+                coordinator = accounts[0]
+                smurfs = accounts[1:]
+                for smurf in smurfs:
+                    if coordinator not in edges.get(smurf, set()):
+                        print(f"  FAIL: {pattern_id} — missing edge {smurf} -> {coordinator}")
+                        all_valid = False
+                        break
             else:
-                continue
+                print(f"  WARN: {pattern_id} — unknown pattern_type '{pattern_type}', skipping")
 
     if all_valid:
         print("All fraud patterns verified successfully.")
