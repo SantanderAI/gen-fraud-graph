@@ -79,6 +79,16 @@ def main(argv: list[str] | None = None) -> None:
         default=False,
         help="Skip account generation (useful when resuming).",
     )
+    parser.add_argument(
+        "--hardness",
+        type=str,
+        choices=["low", "medium", "high"],
+        default="low",
+        help="Difficulty preset controlling how hard the fraud data is to "
+        "separate by trivial heuristics. 'low' (default) is backward "
+        "compatible. 'medium'/'high' jitter fraud amounts, overlap rings, and "
+        "inject decoy legitimate high-value cycles. Default: low.",
+    )
 
     args = parser.parse_args(argv)
 
@@ -91,6 +101,7 @@ def main(argv: list[str] | None = None) -> None:
         output_format=args.format,
         compress=args.compress,
         output_dir=args.output,
+        hardness=args.hardness,
     )
 
     generator = FraudGraphGenerator(cfg)
